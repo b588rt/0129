@@ -1,0 +1,49 @@
+
+Sub ProcessStatusData_Array_Dynamic()
+
+    Dim ws As Worksheet
+    Dim statusCell As Range
+    Dim dataArr As Variant
+    Dim lastRow As Long
+    Dim lastCol As Long 
+    Dim statusCol As Integer
+    Dim i As Long
+    
+    Set ws = ThisWorkbook.Sheets("工作表3")
+    
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    Set statusCell = ws.Range(ws.Cells(1, 1), ws.Cells(1, lastCol)).Find(What:="狀態", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    If statusCell Is Nothing Then
+        MsgBox " find Error！", vbExclamation
+        Exit Sub
+    End If
+    
+    statusCol = statusCell.Column
+    lastRow = ws.Cells(ws.Rows.Count, statusCol).End(xlUp).Row
+    If lastRow < 2 Then Exit Sub
+    
+    statusCell.Interior.Color = RGB(146, 208, 80)
+    
+ 
+    dataArr = ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, lastCol)).Value
+    
+    For i = 2 To lastRow
+        If dataArr(i, statusCol) = "使用" Then
+    
+            If statusCol < lastCol Then
+
+                If Left(dataArr(i, statusCol + 1), 1) = "M" Then   ' check Right one cell is "M"
+
+                    If statusCol > 2 Then                          ' If find "M" ，Left Two cell fill green
+
+                         ws.Cells(i, statusCol - 2).Interior.Color = RGB(146, 208, 80)
+
+                    End If
+                End If
+            End If
+        End If
+    Next i
+    
+End Sub

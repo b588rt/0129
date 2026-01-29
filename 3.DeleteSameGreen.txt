@@ -1,0 +1,75 @@
+
+
+Sub FastDeleteMassiveData()
+
+    Dim ws As Worksheet
+    Dim targetCell As Range
+    Dim lastRow As Long
+    Dim targetCol As Integer
+    Dim i As Long
+    Dim greenValues As Object
+    Dim val As String
+    Dim delRange As Range 
+    
+   
+    Set greenValues = CreateObject("Scripting.Dictionary")
+    Set ws = ThisWorkbook.Sheets("工作表3")
+    
+   
+    Set targetCell = ws.Range("A1:Z1").Find(What:="學號3h", LookIn:=xlValues, LookAt:=xlWhole)
+    
+    If targetCell Is Nothing Then
+        MsgBox " find Error！", vbExclamation
+        Exit Sub
+    End If
+    
+    targetCol = targetCell.Column
+    targetCell.Interior.Color = RGB(146, 208, 80)
+    lastRow = ws.Cells(ws.Rows.Count, targetCol).End(xlUp).Row
+    
+  
+    For i = 2 To lastRow
+        If ws.Cells(i, targetCol).Interior.Color = RGB(146, 208, 80) Then
+            val = Trim(CStr(ws.Cells(i, targetCol).Value))
+            If val <> "" Then
+                If Not greenValues.Exists(val) Then
+                    greenValues.Add val, True
+                End If
+            End If
+        End If
+    Next i
+    
+    If greenValues.Count = 0 Then
+        MsgBox " find green Error。", vbExclamation
+        Exit Sub
+    End If
+    
+  
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual 
+    
+    For i = 2 To lastRow
+        val = Trim(CStr(ws.Cells(i, targetCol).Value))
+        If greenValues.Exists(val) Then
+            If delRange Is Nothing Then
+                Set delRange = ws.Rows(i)
+            Else
+                Set delRange = Union(delRange, ws.Rows(i))
+            End If
+        End If
+        
+      
+        If i Mod 1000 = 0 And Not delRange Is Nothing Then
+            delRange.Delete
+            Set delRange = Nothing
+        End If
+    Next i
+    
+   
+    If Not delRange Is Nothing Then delRange.Delete
+    
+    Application.Calculation = xlCalculationAutomatic
+    Application.ScreenUpdating = True
+    
+  
+End Sub

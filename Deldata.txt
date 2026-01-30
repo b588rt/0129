@@ -1,0 +1,60 @@
+
+Sub DeleteRowsWithArray()
+
+    Dim ws As Worksheet
+    Dim lastRow As Long, lastCol As Long
+    Dim statusCol As Long
+    Dim sourceArr As Variant, resultArr As Variant
+    Dim i As Long, j As Long, count As Long
+    
+    Set ws = ThisWorkbook.Sheets("工作表3")
+    
+    Dim fnd As Range
+    Set fnd = ws.Range("A1:Z1").Find("狀態", LookIn:=xlValues, LookAt:=xlWhole)
+    If fnd Is Nothing Then MsgBox " find Error ": Exit Sub
+    statusCol = fnd.Column
+    
+  
+    lastRow = ws.Cells(ws.Rows.count, 1).End(xlUp).Row
+    lastCol = ws.Cells(1, ws.Columns.count).End(xlToLeft).Column
+    sourceArr = ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, lastCol)).Value
+    ReDim resultArr(1 To lastRow, 1 To lastCol)
+    
+ 
+    count = 0
+    For i = 1 To lastRow
+        Dim shouldDelete As Boolean: shouldDelete = False
+        
+ 
+        If i > 1 Then
+            Dim val As String
+            val = CStr(sourceArr(i, statusCol))
+ 
+            If InStr(val, "出教室") > 0 Or _
+               InStr(val, "放回電腦") > 0 Or _
+               InStr(val, "取出電腦") > 0 Then
+                shouldDelete = True
+            End If
+        End If
+        
+ 
+        If Not shouldDelete Then
+            count = count + 1
+            For j = 1 To lastCol
+                resultArr(count, j) = sourceArr(i, j)
+            Next j
+        End If
+    Next i
+    
+ 
+    Application.ScreenUpdating = False
+    ws.Cells.ClearContents
+    If count > 0 Then
+        ws.Cells(1, 1).Resize(count, lastCol).Value = resultArr
+    End If
+    Application.ScreenUpdating = True
+    
+ 
+    
+End Sub
+

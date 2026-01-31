@@ -1,0 +1,39 @@
+
+
+
+Sub UpdateStatusHeader()
+
+
+    Dim ws As Worksheet
+    Dim targetRange As Range
+    Dim foundCell As Range
+    Dim colNum As Long
+    
+
+    On Error Resume Next
+    Set ws = ThisWorkbook.Worksheets("工作表3")
+    On Error GoTo 0
+    
+
+    If ws Is Nothing Then
+        MsgBox " Find Error。", vbExclamation
+        Exit Sub
+    End If
+    
+ 
+    Set targetRange = ws.Range("A1:Z1")
+    Set foundCell = targetRange.Find(What:="狀態", LookIn:=xlValues, LookAt:=xlWhole)
+    
+ 
+    If Not foundCell Is Nothing Then
+        colNum = foundCell.Column
+        
+        
+        foundCell.Value = "實際狀態"
+        
+        
+    Else
+        
+    End If
+    
+End Sub

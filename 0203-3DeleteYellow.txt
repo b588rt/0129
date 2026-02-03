@@ -1,0 +1,64 @@
+
+
+
+Sub DeleteYellowRowsFast()
+
+    Dim ws As Worksheet
+    Dim targetColID As Integer
+    Dim lastRowID As Long
+    Dim i As Long
+    Dim delRange As Range
+    
+   
+    Set ws = ThisWorkbook.Sheets("工作表3")
+    
+   
+    For i = 1 To 26 ' A 到 Z 欄
+        If ws.Cells(1, i).Value = "學號3h" Then
+            targetColID = i
+            Exit For
+        End If
+    Next i
+    
+   
+    If targetColID = 0 Then
+        MsgBox " Find Error！", vbExclamation
+        Exit Sub
+    End If
+    
+   
+    Application.ScreenUpdating = False 
+    Application.Calculation = xlCalculationManual 
+    
+    lastRowID = ws.Cells(ws.Rows.count, targetColID).End(xlUp).Row
+    
+   
+    For i = 2 To lastRowID
+   
+        If ws.Cells(i, targetColID).Interior.Color = vbYellow Then
+   
+            If delRange Is Nothing Then
+                Set delRange = ws.Rows(i)
+            Else
+                Set delRange = Union(delRange, ws.Rows(i))
+            End If
+        End If
+        
+   
+        If i Mod 500 = 0 And Not delRange Is Nothing Then
+            delRange.Delete
+            Set delRange = Nothing
+        End If
+    Next i
+    
+   
+    If Not delRange Is Nothing Then
+        delRange.Delete
+    End If
+    
+   
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    
+   
+End Sub

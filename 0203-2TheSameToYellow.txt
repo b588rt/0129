@@ -1,0 +1,57 @@
+
+Sub FastMatchWithDictionary()
+
+    Dim ws As Worksheet
+    Dim targetColRed As Integer, targetColID As Integer
+    Dim lastRowRed As Long, lastRowID As Long
+    Dim dict As Object
+    Dim dataRed As Variant, dataID As Variant
+    Dim i As Long
+    
+    Set ws = ThisWorkbook.Sheets("工作表3")
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+  
+    For i = 1 To 26
+        If ws.Cells(1, i).Value = "紅色位置" Then
+            targetColRed = i
+            ws.Cells(1, i).Interior.Color = vbYellow
+        ElseIf ws.Cells(1, i).Value = "學號3h" Then
+            targetColID = i
+            ws.Cells(1, i).Interior.Color = vbGreen
+        End If
+    Next i
+    
+    If targetColRed = 0 Or targetColID = 0 Then Exit Sub
+
+  
+    lastRowRed = ws.Cells(ws.Rows.count, targetColRed).End(xlUp).Row
+    lastRowID = ws.Cells(ws.Rows.count, targetColID).End(xlUp).Row
+    
+    dataRed = ws.Range(ws.Cells(2, targetColRed), ws.Cells(lastRowRed, targetColRed)).Value
+    
+  
+    On Error Resume Next 
+    For i = 1 To UBound(dataRed, 1)
+        Dim val As String
+        val = Trim(CStr(dataRed(i, 1)))
+        If val <> "" Then
+            dict(val) = 1
+        End If
+    Next i
+    On Error GoTo 0
+
+    Application.ScreenUpdating = False 
+    
+    For i = 2 To lastRowID
+        Dim currentID As String
+        currentID = Trim(CStr(ws.Cells(i, targetColID).Value))
+        
+        If dict.Exists(currentID) Then
+            ws.Cells(i, targetColID).Interior.Color = vbYellow
+        End If
+    Next i
+    
+    Application.ScreenUpdating = True
+
+End Sub

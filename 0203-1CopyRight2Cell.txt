@@ -1,0 +1,49 @@
+Sub ProcessStatusAndCopy()
+
+   
+    Dim ws As Worksheet
+    Dim statusCol As Range
+    Dim colNum As Integer
+    Dim lastRow As Long
+    Dim i As Long
+    Dim cellValue As String
+    Dim rightCellValue As String
+
+   
+    Set ws = ThisWorkbook.Sheets("工作表3")
+
+   
+    Set statusCol = ws.Range("A1:Z1").Find(What:="狀態", LookIn:=xlValues, LookAt:=xlWhole)
+
+    If Not statusCol Is Nothing Then
+        colNum = statusCol.Column
+   
+        lastRow = ws.Cells(ws.Rows.count, colNum).End(xlUp).Row
+        
+   
+        For i = 2 To lastRow
+   
+            If ws.Cells(i, colNum).Value = "上機使用" Then
+                
+                rightCellValue = CStr(ws.Cells(i, colNum + 1).Value)
+                
+                If Left(rightCellValue, 2) = "GK" Then
+   
+                    
+                    'If colNum > 1 Then
+                     '   ws.Cells(i, colNum - 1).Interior.Color = vbYellow
+                        
+   
+                        ws.Cells(i, colNum + 2).Value = ws.Cells(i, colNum - 1).Value
+                    'End If
+                    
+                End If
+            End If
+        Next i
+        
+       
+    Else
+        MsgBox " Find Error。", vbExclamation
+    End If
+
+End Sub

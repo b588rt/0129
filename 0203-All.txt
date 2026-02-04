@@ -1,0 +1,132 @@
+
+
+
+
+Option Explicit
+
+Sub Main()
+    Dim ws As Worksheet
+    
+    Set ws = ThisWorkbook.Sheets("工作表3")
+    
+    Application.ScreenUpdating = False         
+    Application.Calculation = xlCalculationManual 
+    Application.EnableEvents = False           
+    
+    On Error GoTo ErrorHandler 
+    
+    Call Sub_ProcessStatusAndCopy(ws)
+    
+    Call Sub_FastMatchWithDictionary(ws)
+    
+    Call Sub_DeleteYellowRowsFast_Fixed(ws)
+    
+
+CleanUp:
+
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+    Exit Sub
+
+ErrorHandler:
+    MsgBox " Error !! Error !! Error !! " & Err.Description, vbCritical
+    Resume CleanUp
+End Sub
+
+
+
+Sub Sub_ProcessStatusAndCopy(ws As Worksheet)
+    Dim statusCol As Range
+    Dim colNum As Integer, lastRow As Long, i As Long
+    Dim rightCellValue As String
+
+    Set statusCol = ws.Range("A1:Z1").Find(What:="狀態", LookIn:=xlValues, LookAt:=xlWhole)
+    If statusCol Is Nothing Then Exit Sub
+    
+    colNum = statusCol.Column
+    lastRow = ws.Cells(ws.Rows.count, colNum).End(xlUp).Row
+    
+    For i = 2 To lastRow
+        If ws.Cells(i, colNum).Value = "上機使用" Then
+            rightCellValue = CStr(ws.Cells(i, colNum + 1).Value)
+            If Left(rightCellValue, 2) = "GK" Then
+                If colNum > 1 Then
+
+                    ws.Cells(i, colNum - 1).Interior.Color = vbYellow
+
+                    ws.Cells(i, colNum + 2).Value = ws.Cells(i, colNum - 1).Value
+                End If
+            End If
+        End If
+    Next i
+End Sub
+
+
+Sub Sub_FastMatchWithDictionary(ws As Worksheet)
+    Dim targetColRed As Integer, targetColID As Integer
+    Dim lastRowRed As Long, lastRowID As Long
+    Dim dict As Object
+    Dim dataRed As Variant
+    Dim i As Long, val As String, currentID As String
+    
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+
+    For i = 1 To 26
+        If ws.Cells(1, i).Value = "紅色位置" Then
+            targetColRed = i
+        ElseIf ws.Cells(1, i).Value = "學號3h" Then
+            targetColID = i
+        End If
+    Next i
+    
+    If targetColRed = 0 Or targetColID = 0 Then Exit Sub
+
+    lastRowRed = ws.Cells(ws.Rows.count, targetColRed).End(xlUp).Row
+    If lastRowRed < 2 Then Exit Sub
+    dataRed = ws.Range(ws.Cells(2, targetColRed), ws.Cells(lastRowRed, targetColRed)).Value
+    
+    On Error Resume Next
+    For i = 1 To UBound(dataRed, 1)
+        val = Trim(CStr(dataRed(i, 1)))
+        If val <> "" Then dict(val) = 1
+    Next i
+    On Error GoTo 0
+
+    lastRowID = ws.Cells(ws.Rows.count, targetColID).End(xlUp).Row
+    For i = 2 To lastRowID
+        currentID = Trim(CStr(ws.Cells(i, targetColID).Value))
+        If dict.Exists(currentID) Then
+            ws.Cells(i, targetColID).Interior.Color = vbYellow
+        End If
+    Next i
+End Sub
+
+
+Sub Sub_DeleteYellowRowsFast_Fixed(ws As Worksheet)
+    Dim targetColID As Integer, lastRowID As Long, i As Long
+    
+    For i = 1 To 26
+        If ws.Cells(1, i).Value = "學號3h" Then
+            targetColID = i
+            Exit For
+        End If
+    Next i
+    
+    If targetColID = 0 Then Exit Sub
+    
+    lastRowID = ws.Cells(ws.Rows.count, targetColID).End(xlUp).Row
+    
+    For i = lastRowID To 2 Step -1
+
+        If ws.Cells(i, targetColID).Interior.Color = vbYellow Or _
+           ws.Cells(i, targetColID).Interior.ColorIndex = 6 Then
+            ws.Rows(i).Delete
+        End If
+    Next i
+
+End Sub
+
+
+

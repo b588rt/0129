@@ -1,0 +1,65 @@
+
+Sub ProcessSuperLargeData_100K()
+
+    Dim ws As Worksheet
+    Dim dataArr As Variant
+    Dim timeCol As Integer
+    Dim lastRow As Long, lastCol As Integer
+    Dim i As Long, j As Integer
+    Dim dict As Object
+    Dim timeKey As String
+    Dim resultArr() As Variant
+    Dim count As Long
+    
+    Set ws = ThisWorkbook.Sheets("工作表3")
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+    
+    On Error GoTo CleanUp
+    
+    Dim headRange As Range
+    Set headRange = ws.Range("A1:Z1").Find("時間", LookIn:=xlValues, LookAt:=xlPart)
+    
+   
+    timeCol = headRange.Column
+    lastRow = ws.Cells(ws.Rows.Count, timeCol).End(xlUp).Row
+    lastCol = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+    
+    dataArr = ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, lastCol)).Value
+    
+    Set dict = CreateObject("Scripting.Dictionary")
+    ReDim resultArr(1 To lastRow, 1 To lastCol)
+    
+    count = 1
+    For j = 1 To lastCol: resultArr(1, j) = dataArr(1, j): Next j
+    
+  
+    For i = 2 To lastRow
+  
+        If IsDate(dataArr(i, timeCol)) Then
+            timeKey = Format(dataArr(i, timeCol), "HH:mm:ss")
+        Else
+            timeKey = CStr(dataArr(i, timeCol))
+        End If
+        
+  
+        If Not dict.Exists(timeKey) Then
+            dict.Add timeKey, Nothing
+            count = count + 1
+            For j = 1 To lastCol
+                resultArr(count, j) = dataArr(i, j)
+            Next j
+        End If
+    Next i
+    
+  
+    ws.Cells.ClearContents
+    ws.Cells(1, 1).Resize(count, lastCol).Value = resultArr
+    
+  
+
+CleanUp:
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+
+End Sub

@@ -1,0 +1,19 @@
+
+
+Sub RemoveGreenTriangles()
+
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Worksheets("工作表3")
+    
+    Dim cell As Range
+    On Error Resume Next 
+    
+    For Each cell In ws.UsedRange
+        If cell.Errors(xlNumberAsText).Value = True Then
+            cell.Errors(xlNumberAsText).Ignore = True
+        End If
+    Next cell
+    On Error GoTo 0
+    
+    
+End Sub
